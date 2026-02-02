@@ -110,7 +110,6 @@ if uploaded_files:
                     y=y_axis,
                     color='Source' if len(uploaded_files) > 1 else None,
                     template="plotly_dark",
-                    opacity=0.5 # Points slightly paler, so the line stands out better
                 )
             
                 # Prevents ugly lines due to data gaps (e.g., during the day)
