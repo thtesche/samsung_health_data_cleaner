@@ -16,80 +16,80 @@ This tool automatically cleans the data and enables a detailed night analysis.
 
 # --- FILE UPLOAD ---
 uploaded_files = st.file_uploader(
-    "Select Samsung CSV files", 
-    type=['csv'], 
+    "Select Samsung CSV files",
+    type=['csv'],
     accept_multiple_files=True
 )
 
 if uploaded_files:
     all_dfs = []
-    
+
     for uploaded_file in uploaded_files:
         # Read file
         raw_text = uploaded_file.read().decode("utf-8", errors="ignore")
-        
+
         # We skip the very first line (Samsung metadata)
         # index_col=False prevents column shifting
         df_temp = pd.read_csv(
-            io.StringIO(raw_text), 
-            skiprows=1, 
-            index_col=False, 
+            io.StringIO(raw_text),
+            index_col=False,
             engine='python'
         )
-        
+
         # Clean column names (removes long prefixes)
         df_temp.columns = [c.split('.')[-1].strip() for c in df_temp.columns]
-        
+
         # Add filename for distinction
         df_temp['Source'] = uploaded_file.name
         all_dfs.append(df_temp)
 
     # Combine all files into one large dataset
-    df = pd.concat(all_dfs, axis=0, ignore_index=True)
+    df: pd.DataFrame = pd.concat(all_dfs, axis=0, ignore_index=True)
 
     # --- DATE CONVERSION ---
-    if 'start_time' in df.columns:
+    if 'create_time' in df.columns:
         # Conversion with millisecond format
-        df['start_time'] = pd.to_datetime(df['start_time'], format='%Y-%m-%d %H:%M:%S.%f', errors='coerce')
-        
+        df['create_time'] = pd.to_datetime(df['create_time'], format='%Y-%m-%d %H:%M:%S.%f', errors='coerce')
+
         # Remove invalid rows
-        df = df.dropna(subset=['start_time'])
-        df = df.sort_values('start_time')
+        df = df.dropna(subset=['create_time'])
+        df = df.sort_values('create_time')
 
         # --- SIDEBAR / FILTER ---
         st.sidebar.header("🛠️ Filters & Settings")
-        
+
         # 1. Date Filter
-        min_date = df['start_time'].min().to_pydatetime()
-        max_date = df['start_time'].max().to_pydatetime()
-        
+        min_date = df['create_time'].min().to_pydatetime()
+        max_date = df['create_time'].max().to_pydatetime()
+
         selected_dates = st.sidebar.slider(
-            "Select time range", 
-            min_date, max_date, 
+            "Select time range",
+            min_date, max_date,
             (min_date, max_date),
             format="DD.MM.YY"
         )
-        
+
         # Apply filter
-        mask = (df['start_time'] >= selected_dates[0]) & (df['start_time'] <= selected_dates[1])
+        mask = (df['create_time'] >= selected_dates[0]) & (df['create_time'] <= selected_dates[1])
         filtered_df = df.loc[mask].copy()
 
         # 2. Night Mode Filter
         st.sidebar.markdown("---")
         st.sidebar.subheader("🌙 Night Mode")
         use_night_filter = st.sidebar.checkbox("Restrict time window", value=False)
-        
+
         if use_night_filter:
             start_t = st.sidebar.time_input("From", datetime.time(21, 0))
             end_t = st.sidebar.time_input("To", datetime.time(4, 30))
-            
+
+
             def is_in_range(t):
                 if start_t <= end_t:
                     return start_t <= t <= end_t
-                else: # Across midnight (e.g., 21:00 - 04:30)
+                else:  # Across midnight (e.g., 21:00 - 04:30)
                     return t >= start_t or t <= end_t
-            
-            filtered_df['temp_time'] = filtered_df['start_time'].dt.time
+
+            filtered_df['temp_time'] = filtered_df['create_time'].dt.time
             filtered_df = filtered_df[filtered_df['temp_time'].apply(is_in_range)]
 
         # --- VISUALIZATION ---
@@ -99,22 +99,22 @@ if uploaded_files:
             # Remove IDs and unusable columns
             blacklist = ['tag_id', 'source', 'coverage_rate', 'client_data_ver', 'custom']
             clean_cols = [c for c in num_cols if c not in blacklist]
-            
+
             st.subheader("Graphical Analysis")
             y_axis = st.multiselect("Which values to display?", clean_cols, default=clean_cols[:1])
-            
+
             if y_axis:
                 fig = px.scatter(
-                    filtered_df, 
-                    x='start_time', 
+                    filtered_df,
+                    x='create_time',
                     y=y_axis,
                     color='Source' if len(uploaded_files) > 1 else None,
                     template="plotly_dark",
                 )
-            
+
                 # Prevents ugly lines due to data gaps (e.g., during the day)
                 fig.update_traces(connectgaps=False)
-                
+
                 # --- POLYNOMIAL INTERPOLATION ---
                 st.sidebar.markdown("---")
                 st.sidebar.subheader("📈 Trend Line")
@@ -124,26 +124,26 @@ if uploaded_files:
                 if show_trend and len(filtered_df) > degree:
                     for col in y_axis:
                         # Convert time to numbers for calculation
-                        x_numeric = pd.to_numeric(filtered_df['start_time'])
+                        x_numeric = pd.to_numeric(filtered_df['create_time'])
                         y_values = filtered_df[col]
-                        
+
                         # Calculate polynomial (Fit)
                         weights = np.polyfit(x_numeric, y_values, degree)
                         model = np.poly1d(weights)
-                        
+
                         # Calculate trend values
                         trend_line = model(x_numeric)
-                        
+
                         # Add trend line to chart
                         fig.add_scatter(
-                            x=filtered_df['start_time'], 
-                            y=trend_line, 
-                            mode='lines', 
+                            x=filtered_df['create_time'],
+                            y=trend_line,
+                            mode='lines',
                             name=f'Trend {col} (Degree {degree})',
                             line=dict(width=3)
                         )
 
                 st.plotly_chart(fig, width="stretch")
-            
+
             # --- STATISTICS ---
             st.markdown("---")

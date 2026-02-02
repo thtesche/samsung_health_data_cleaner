@@ -17,7 +17,7 @@ CLEANING_CONFIG = {
                       'client_data_id', 'update_time', 'modify_sh_ver', 'total_sleep_time_weight',
                       'original_efficiency', 'has_sleep_data', 'combined_id', 'data_version', 'is_integrated',
                       'integrated_id', 'extra_data', 'create_sh_ver', 'custom', 'original_wake_up_time',
-                      'original_bed_time', 'create_time']
+                      'original_bed_time']
     },
     "oxygen_saturation": {
         "pattern": "com.samsung.shealth.tracker.oxygen_saturation.*.csv",
