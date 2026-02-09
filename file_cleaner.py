@@ -151,6 +151,32 @@ def clean_health_data(base_dir):
                 # Remove rows where mapping might have failed (e.g., NaN)
                 df.dropna(subset=['stage'], inplace=True)
 
+            # --- Special transformation for ECG symptoms ---
+            if file_type == "ecg" and 'symptoms' in df.columns:
+                symptom_mapping = {
+                    0: 'None',
+                    1: 'Shortness of breath',
+                    2: 'Fatigue',
+                    3: 'Dizziness',
+                    4: 'Chest pain/pressure',
+                    5: 'Palpitations',
+                    6: 'Faintness'
+                }
+
+                def extract_symptom_id(symptom_val):
+                    if pd.isna(symptom_val): return 0
+                    symptom_str = str(symptom_val).strip()
+                    if not symptom_str or symptom_str == '[]': return 0
+                    try:
+                        # Extracts the first number from something like '[1]' or '[1, 2]'
+                        num_str = symptom_str.replace('[', '').replace(']', '').split(',')[0].strip()
+                        return int(num_str) if num_str else 0
+                    except (ValueError, IndexError):
+                        return 0
+
+                symptom_ids = df['symptoms'].apply(extract_symptom_id)
+                df['symptoms'] = symptom_ids.map(symptom_mapping)
+
             # --- STEP 4: REORDER COLUMNS ---
             # Order by create_time, start_time, end_time, then the rest
             all_cols = list(df.columns)
