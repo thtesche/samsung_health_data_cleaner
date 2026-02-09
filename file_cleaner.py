@@ -45,7 +45,7 @@ CLEANING_CONFIG = {
     "weight": {
         "pattern": "com.samsung.health.weight.*.csv",
         "output_name": "weight.csv",
-        "drop_cols": ['start_time']
+        "drop_cols": ['start_time', 'end_time']
     },
     "advanced_glycation_endproduct": {
         "pattern": "com.samsung.health.advanced_glycation_endproduct.*.csv",
@@ -99,6 +99,16 @@ CLEANING_CONFIG = {
         "output_name": "sleep_apnea.csv",
         "drop_cols": ['start_time', 'end_time', 'shm_start_time', 'shm_data_id', 'shm_device_id', 'start_time_offset',
                       'shm_create_time', 'shm_update_time', 'shm_device_uuid']
+    },
+    "user_profile": {
+        "pattern": "com.samsung.health.user_profile.*.csv",
+        "output_name": "user_profile.csv",
+        "drop_cols": []
+    },
+    "activity_day_summary": {
+        "pattern": "com.samsung.shealth.activity.day_summary.*.csv",
+        "output_name": "activity_day_summary.csv",
+        "drop_cols": ['start_time', 'end_time']
     }
 }
 
@@ -136,7 +146,8 @@ def clean_health_data(base_dir):
                     40003: 'Deep sleep',
                     40004: 'REM sleep'
                 }
-                df['stage'] = pd.to_numeric(df['stage'], errors='coerce').map(sleep_stage_mapping)
+                df['stage'] = pd.to_numeric(df['stage'], errors='coerce')
+                df['stage'] = df['stage'].map(sleep_stage_mapping)
                 # Remove rows where mapping might have failed (e.g., NaN)
                 df.dropna(subset=['stage'], inplace=True)
 
