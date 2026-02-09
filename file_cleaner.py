@@ -190,6 +190,19 @@ def clean_health_data(base_dir):
                 df['classification'] = df['classification'].astype(int).map(classification_mapping)
                 df.dropna(subset=['classification'], inplace=True)
 
+            # --- Special transformation for Food Intake meal_type ---
+            if file_type == "food_intake" and 'meal_type' in df.columns:
+                meal_type_mapping = {
+                    100001: 'Breakfast',
+                    100002: 'Lunch',
+                    100003: 'Dinner',
+                    100004: 'Morning snack',
+                    100005: 'Afternoon snack',
+                    100006: 'Evening snack'
+                }
+                df['meal_type'] = pd.to_numeric(df['meal_type'], errors='coerce')
+                df['meal_type'] = df['meal_type'].map(meal_type_mapping)
+
             # --- STEP 4: REORDER COLUMNS ---
             # Order by create_time, start_time, end_time, then the rest
             all_cols = list(df.columns)
