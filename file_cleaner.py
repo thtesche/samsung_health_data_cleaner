@@ -58,6 +58,11 @@ CLEANING_CONFIG = {
         "drop_cols": ['start_time', 'end_time', 'ecg_version', 'sample_frequency', 'shm_data_id', 'shm_device_uuid',
                       'shm_update_time', 'chart_data', 'shm_create_time', 'ecg_version', 'data_mime', 'data',
                       'sample_count']
+    },
+    "floors_climbed": {
+        "pattern": "com.samsung.health.floors_climbed.*.csv",
+        "output_name": "floors_climbed.csv",
+        "drop_cols": ['start_time', 'end_time', 'raw_data']
     }
 }
 
