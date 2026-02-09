@@ -63,6 +63,11 @@ CLEANING_CONFIG = {
         "pattern": "com.samsung.health.floors_climbed.*.csv",
         "output_name": "floors_climbed.csv",
         "drop_cols": ['start_time', 'end_time', 'raw_data']
+    },
+    "food_info": {
+        "pattern": "com.samsung.health.food_info.*.csv",
+        "output_name": "food_info.csv",
+        "drop_cols": ['start_time', 'end_time', 'description', 'provider_food_id', 'info_provider']
     }
 }
 
