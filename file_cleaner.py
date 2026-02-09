@@ -7,14 +7,14 @@ from pathlib import Path
 DEFAULT_DROP_COLS = [
     'create_sh_ver', 'modify_sh_ver', 'update_time', 'datauuid', 'pkg_name', 'deviceuuid',
     'client_data_ver', 'client_data_id', 'time_offset', 'comment', 'custom', 'data_version',
-    'extra_data', 'binning_data', 'source', 'tag_id'
+    'extra_data', 'binning_data', 'source', 'tag_id', 'day_time'
 ]
 
 CLEANING_CONFIG = {
     "vitality": {
         "pattern": "com.samsung.shealth.vitality_score.*.csv",
         "output_name": "vitality_score.csv",
-        "drop_cols": ['shr_calculation_index', 'shrv_calculation_index', 'day_time']
+        "drop_cols": ['shr_calculation_index', 'shrv_calculation_index']
     },
     "sleep": {
         "pattern": "com.samsung.shealth.sleep.*.csv",
@@ -35,12 +35,17 @@ CLEANING_CONFIG = {
     "pedometer_day_summary": {
         "pattern": "com.samsung.shealth.tracker.pedometer_day_summary.*.csv",
         "output_name": "pedometer_day_summary.csv",
-        "drop_cols": ['source_package_name', 'source_info', 'achievement', 'day_time']
+        "drop_cols": ['source_package_name', 'source_info', 'achievement']
     },
     "weight": {
         "pattern": "com.samsung.health.weight.*.csv",
         "output_name": "weight.csv",
         "drop_cols": ['start_time']
+    },
+    "advanced_glycation_endproduct": {
+        "pattern": "com.samsung.health.advanced_glycation_endproduct.*.csv",
+        "output_name": "advanced_glycation_endproduct.csv",
+        "drop_cols": ['start_time', 'end_time','level_boundary', 'version']
     }
 }
 
