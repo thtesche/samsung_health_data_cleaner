@@ -3,48 +3,44 @@ import glob
 import argparse
 from pathlib import Path
 
+# Columns that appear in almost every Samsung Health file and should be removed
+DEFAULT_DROP_COLS = [
+    'create_sh_ver', 'modify_sh_ver', 'update_time', 'datauuid', 'pkg_name', 'deviceuuid',
+    'client_data_ver', 'client_data_id', 'time_offset', 'comment', 'custom', 'data_version',
+    'extra_data', 'binning_data', 'source', 'tag_id'
+]
+
 CLEANING_CONFIG = {
     "vitality": {
         "pattern": "com.samsung.shealth.vitality_score.*.csv",
         "output_name": "vitality_score.csv",
-        "drop_cols": ['create_sh_ver', 'modify_sh_ver', 'update_time', 'datauuid', 'pkg_name', 'deviceuuid',
-                      'data_version', 'shr_calculation_index', 'shrv_calculation_index', 'day_time']
+        "drop_cols": ['shr_calculation_index', 'shrv_calculation_index', 'day_time']
     },
     "sleep": {
         "pattern": "com.samsung.shealth.sleep.*.csv",
         "output_name": "sleep.csv",
-        "drop_cols": ['datauuid', 'pkg_name', 'comment', 'deviceuuid', 'time_offset', 'client_data_ver',
-                      'client_data_id', 'update_time', 'modify_sh_ver', 'total_sleep_time_weight',
-                      'original_efficiency', 'has_sleep_data', 'combined_id', 'data_version', 'is_integrated',
-                      'integrated_id', 'extra_data', 'create_sh_ver', 'custom', 'original_wake_up_time',
-                      'original_bed_time']
+        "drop_cols": ['total_sleep_time_weight', 'original_efficiency', 'has_sleep_data', 'combined_id',
+                      'is_integrated', 'integrated_id', 'original_wake_up_time', 'original_bed_time']
     },
     "oxygen_saturation": {
         "pattern": "com.samsung.shealth.tracker.oxygen_saturation.*.csv",
         "output_name": "oxygen_saturation.csv",
-        "drop_cols": ['source', 'comment', 'datauuid', 'pkg_name', 'update_time', 'deviceuuid', 'time_offset', 'tag_id',
-                      'client_data_ver', 'client_data_id', 'end_time', 'data_version', 'heart_rate', 'start_time',
-                      'modify_sh_ver', 'integrated_id', 'extra_data', 'create_sh_ver', 'custom', 'binning']
+        "drop_cols": ['end_time', 'heart_rate', 'start_time', 'integrated_id', 'binning']
     },
     "heart_rate": {
         "pattern": "com.samsung.shealth.tracker.heart_rate.*.csv",
         "output_name": "heart_rate.csv",
-        "drop_cols": ['create_sh_ver', 'modify_sh_ver', 'source', 'tag_id', 'datauuid', 'deviceuuid', 'pkg_name',
-                      'update_time', 'time_offset', 'binning_data', 'heart_beat_count', 'custom',
-                      'start_time', 'client_data_ver', 'client_data_id', 'comment', 'end_time']
+        "drop_cols": ['heart_beat_count', 'start_time', 'end_time']
     },
     "pedometer_day_summary": {
         "pattern": "com.samsung.shealth.tracker.pedometer_day_summary.*.csv",
         "output_name": "pedometer_day_summary.csv",
-        "drop_cols": ['create_sh_ver', 'binning_data', 'modify_sh_ver', 'update_time', 'source_package_name', 'tag_id',
-                      'source_info', 'deviceuuid', 'datauuid', 'pkg_name', 'time_offset', 'achievement', 'day_time']
+        "drop_cols": ['source_package_name', 'source_info', 'achievement', 'day_time']
     },
     "weight": {
         "pattern": "com.samsung.health.weight.*.csv",
         "output_name": "weight.csv",
-        "drop_cols": ['create_sh_ver', 'start_time', 'binning_data', 'custom', 'modify_sh_ver', 'update_time',
-                      'client_data_id', 'client_data_ver', 'time_offset', 'deviceuuid', 'comment', 'pkg_name',
-                      'datauuid']
+        "drop_cols": ['start_time']
     }
 }
 
@@ -71,7 +67,8 @@ def clean_health_data(base_dir):
 
             # --- STEP 2: APPLY EXCLUSION LIST ---
             # Now we can use simple names in drop_cols
-            df.drop(columns=settings["drop_cols"], inplace=True, errors='ignore')
+            cols_to_drop = settings.get("drop_cols", []) + DEFAULT_DROP_COLS
+            df.drop(columns=cols_to_drop, inplace=True, errors='ignore')
 
             # 3. Move create_time to the first position
             cols = list(df.columns)
