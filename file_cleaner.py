@@ -22,6 +22,11 @@ CLEANING_CONFIG = {
         "drop_cols": ['total_sleep_time_weight', 'original_efficiency', 'has_sleep_data', 'combined_id',
                       'is_integrated', 'integrated_id', 'original_wake_up_time', 'original_bed_time']
     },
+    "sleep_stage": {
+        "pattern": "com.samsung.health.sleep_stage.*.csv",
+        "output_name": "sleep_stage.csv",
+        "drop_cols": ['sleep_id']
+    },
     "oxygen_saturation": {
         "pattern": "com.samsung.shealth.tracker.oxygen_saturation.*.csv",
         "output_name": "oxygen_saturation.csv",
@@ -123,11 +128,29 @@ def clean_health_data(base_dir):
             cols_to_drop = settings.get("drop_cols", []) + DEFAULT_DROP_COLS
             df.drop(columns=cols_to_drop, inplace=True, errors='ignore')
 
-            # 3. Move create_time to the first position
-            cols = list(df.columns)
-            if 'create_time' in cols:
-                cols.insert(0, cols.pop(cols.index('create_time')))
-                df = df[cols]
+            # --- Special transformation for sleep stages ---
+            if file_type == "sleep_stage" and 'stage' in df.columns:
+                sleep_stage_mapping = {
+                    40001: 'Awake',
+                    40002: 'Light sleep',
+                    40003: 'Deep sleep',
+                    40004: 'REM sleep'
+                }
+                df['stage'] = pd.to_numeric(df['stage'], errors='coerce').map(sleep_stage_mapping)
+                # Remove rows where mapping might have failed (e.g., NaN)
+                df.dropna(subset=['stage'], inplace=True)
+
+            # --- STEP 4: REORDER COLUMNS ---
+            # Order by create_time, start_time, end_time, then the rest
+            all_cols = list(df.columns)
+
+            # Define the desired prefix order
+            prefix_order = ['create_time', 'start_time', 'end_time']
+
+            # Extract the prefix columns that exist in the DataFrame, in the correct order
+            ordered_prefix = [col for col in prefix_order if col in all_cols]
+            remaining_cols = [col for col in all_cols if col not in ordered_prefix]
+            df = df[ordered_prefix + remaining_cols]
 
             all_dfs.append(df)
 
