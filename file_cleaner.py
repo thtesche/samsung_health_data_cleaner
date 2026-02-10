@@ -120,6 +120,11 @@ CLEANING_CONFIG = {
         "pattern": "com.samsung.shealth.breathing.*.csv",
         "output_name": "breathing.csv",
         "drop_cols": ['start_time', 'end_time', 'shm_data_id', 'shm_device_uuid', 'shm_create_time', 'shm_update_time']
+    },
+    "calories_burned_details": {
+        "pattern": "com.samsung.shealth.calories_burned.details.*.csv",
+        "output_name": "calories_burned_details.csv",
+        "drop_cols": ['start_time', 'end_time', 'version', ]
     }
 }
 
