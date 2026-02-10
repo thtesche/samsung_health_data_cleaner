@@ -124,7 +124,14 @@ CLEANING_CONFIG = {
     "calories_burned_details": {
         "pattern": "com.samsung.shealth.calories_burned.details.*.csv",
         "output_name": "calories_burned_details.csv",
-        "drop_cols": ['start_time', 'end_time', 'version', ]
+        "drop_cols": ['start_time', 'end_time', 'version']
+    },
+    "exercise": {
+        "pattern": "com.samsung.shealth.exercise.*.csv",
+        "output_name": "exercise.csv",
+        "drop_cols": ['start_time', 'end_time', 'exercise_id', 'heart_rate', 'program', 'live_data_internal',
+                      'routine_datauuid', 'pace_info_id', 'sensing_status', 'location_data_internal', 'custom_id',
+                      'location_data', 'live_data', 'schedule', 'program_uuid', 'coach_id']
     }
 }
 
