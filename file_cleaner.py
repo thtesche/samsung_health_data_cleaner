@@ -131,10 +131,9 @@ CLEANING_CONFIG = {
         "output_name": "exercise.csv",
         "drop_cols": ['start_time', 'end_time', 'exercise_id', 'heart_rate', 'program', 'live_data_internal',
                       'routine_datauuid', 'pace_info_id', 'sensing_status', 'location_data_internal', 'custom_id',
-                      'location_data', 'live_data', 'schedule', 'program_uuid', 'coach_id']
+                      'location_data', 'live_data', 'schedule', 'program_uuid', 'coach_id', 'source_data']
     }
 }
-
 
 def clean_health_data(base_dir):
     input_path = Path(base_dir)
@@ -237,6 +236,19 @@ def clean_health_data(base_dir):
                 df.dropna(subset=['is_outlier'], inplace=True)
                 df['is_outlier'] = df['is_outlier'].astype(int).map(outlier_mapping)
                 df.dropna(subset=['is_outlier'], inplace=True)
+
+            # --- Special transformation for Exercise Type ---
+            if file_type == "exercise" and 'exercise_type' in df.columns:
+                exercise_mapping = {
+                    1001: 'Walking', 1002: 'Running', 2001: 'Cycling', 2002: 'Mountain biking',
+                    3001: 'Hiking', 4001: 'Swimming', 5001: 'Elliptical trainer',
+                    6001: 'Rowing machine', 7001: 'Circuit training', 8001: 'Weight machine',
+                    9001: 'Stretching', 9002: 'Yoga', 10001: 'Yoga', 10002: 'Pilates', 11001: 'Other workout'
+                }
+                df['exercise_type'] = pd.to_numeric(df['exercise_type'], errors='coerce')
+                # Map known types, fill others with a generic label
+                df['exercise_type'] = df['exercise_type'].map(exercise_mapping).fillna('Other/Unknown')
+                df.dropna(subset=['exercise_type'], inplace=True)
 
             # --- STEP 4: REORDER COLUMNS ---
             # Order by create_time, start_time, end_time, then the rest

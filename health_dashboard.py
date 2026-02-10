@@ -117,6 +117,19 @@ if uploaded_files:
         df['is_outlier'] = pd.to_numeric(df['is_outlier'], errors='coerce').map(outlier_mapping)
         df.dropna(subset=['is_outlier'], inplace=True)
 
+    # Exercise Type Mapping
+    if 'exercise_type' in df.columns and pd.api.types.is_numeric_dtype(df['exercise_type']):
+        exercise_mapping = {
+            1001: 'Walking', 1002: 'Running', 2001: 'Cycling', 2002: 'Mountain biking',
+            3001: 'Hiking', 4001: 'Swimming', 5001: 'Elliptical trainer',
+            6001: 'Rowing machine', 7001: 'Circuit training', 8001: 'Weight machine',
+            9001: 'Stretching', 9002: 'Yoga', 10001: 'Yoga', 10002: 'Pilates', 11001: 'Other workout'
+        }
+        df['exercise_type'] = pd.to_numeric(df['exercise_type'], errors='coerce')
+        # Map known types, fill others with a generic label
+        df['exercise_type'] = df['exercise_type'].map(exercise_mapping).fillna('Other/Unknown')
+        df.dropna(subset=['exercise_type'], inplace=True)
+
     # --- DATE CONVERSION ---
     if 'create_time' in df.columns:
         # Conversion with millisecond format
