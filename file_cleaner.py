@@ -120,6 +120,11 @@ CLEANING_CONFIG = {
         "pattern": "com.samsung.shealth.breathing.*.csv",
         "output_name": "breathing.csv",
         "drop_cols": ['start_time', 'end_time']
+    },
+    "calibration_blood_pressure": {
+        "pattern": "com.samsung.shealth.calibration_blood_pressure.*.csv",
+        "output_name": "calibration_blood_pressure.csv",
+        "drop_cols": ['start_time', 'end_time', 'shm_data_id', 'shm_device_uuid', 'shm_create_time', 'shm_update_time']
     }
 }
 
