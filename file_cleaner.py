@@ -32,6 +32,11 @@ CLEANING_CONFIG = {
         "output_name": "sleep_goal.csv",
         "drop_cols": ['set_time']
     },
+    "sleep_snoring": {
+        "pattern": "com.samsung.shealth.sleep_snoring.*.csv",
+        "output_name": "sleep_snoring.csv",
+        "drop_cols": ['start_time', 'end_time']
+    },
     "oxygen_saturation": {
         "pattern": "com.samsung.shealth.tracker.oxygen_saturation.*.csv",
         "output_name": "oxygen_saturation.csv",
@@ -264,14 +269,14 @@ def clean_health_data(base_dir):
             if file_type == "sleep_goal":
                 for col in ['wake_up_time', 'bed_time', 'sleep_time']:
                     if col in df.columns:
-                        def convert_to_hhmm(val, col_name):
+                        def convert_to_hhmm(val, current_col_name):
                             try:
                                 val = float(val)
                                 if pd.isna(val): return val
                                 
                                 hours_decimal = val / 3600000
                                 
-                                if col_name == 'sleep_time':
+                                if current_col_name == 'sleep_time':
                                     hours_decimal = 24 + hours_decimal
                                 
                                 h = int(hours_decimal)
@@ -309,6 +314,27 @@ def clean_health_data(base_dir):
                 if 'create_time' in final_df.columns:
                     final_df.sort_values(by='create_time', ascending=False, inplace=True)
                     final_df = final_df.head(1)
+
+            # --- Post-processing for Sleep Snoring ---
+            if file_type == "sleep_snoring":
+                if 'create_time' in final_df.columns and 'duration' in final_df.columns:
+                    final_df['create_time'] = pd.to_datetime(final_df['create_time'], errors='coerce')
+                    final_df['day'] = final_df['create_time'].dt.date
+                    
+                    # Fix: pd.to_numeric returns a Series, fillna works on it.
+                    final_df['duration'] = pd.to_numeric(final_df['duration'], errors='coerce').fillna(0)
+                    
+                    # Fix: groupby returns a DataFrame if as_index=False
+                    final_df = final_df.groupby('day', as_index=False)['duration'].sum()
+                    
+                    def ms_to_hhmm(ms):
+                        total_minutes = int(ms / 60000)
+                        h = total_minutes // 60
+                        m = total_minutes % 60
+                        return f"{h:02}:{m:02}"
+                        
+                    final_df['duration'] = final_df['duration'].apply(ms_to_hhmm)
+                    final_df.rename(columns={'day': 'create_time'}, inplace=True)
 
             # --- Post-processing for Mean Arterial Pressure (requires global sorting) ---
             if file_type == "mean_arterial_pressure":
