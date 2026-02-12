@@ -27,6 +27,11 @@ CLEANING_CONFIG = {
         "output_name": "sleep_stage.csv",
         "drop_cols": ['sleep_id']
     },
+    "sleep_goal": {
+        "pattern": "com.samsung.shealth.sleep_goal.*.csv",
+        "output_name": "sleep_goal.csv",
+        "drop_cols": ['set_time']
+    },
     "oxygen_saturation": {
         "pattern": "com.samsung.shealth.tracker.oxygen_saturation.*.csv",
         "output_name": "oxygen_saturation.csv",
@@ -254,6 +259,33 @@ def clean_health_data(base_dir):
                 # Map known types, fill others with a generic label
                 df['exercise_type'] = df['exercise_type'].map(exercise_mapping).fillna('Other/Unknown')
                 df.dropna(subset=['exercise_type'], inplace=True)
+
+            # --- Special transformation for Sleep Goal times ---
+            if file_type == "sleep_goal":
+                for col in ['wake_up_time', 'bed_time', 'sleep_time']:
+                    if col in df.columns:
+                        def convert_to_hhmm(val, col_name):
+                            try:
+                                val = float(val)
+                                if pd.isna(val): return val
+                                
+                                hours_decimal = val / 3600000
+                                
+                                if col_name == 'sleep_time':
+                                    hours_decimal = 24 + hours_decimal
+                                
+                                h = int(hours_decimal)
+                                m = int(round((hours_decimal - h) * 60))
+                                
+                                if m == 60:
+                                    h += 1
+                                    m = 0
+                                
+                                return f"{h:02}:{m:02}"
+                            except (ValueError, TypeError):
+                                return val
+
+                        df[col] = df[col].apply(lambda x: convert_to_hhmm(x, col))
 
             # --- STEP 4: REORDER COLUMNS ---
             # Order by create_time, start_time, end_time, then the rest
