@@ -79,10 +79,10 @@ CLEANING_CONFIG = {
                       'shm_update_time', 'chart_data', 'shm_create_time', 'ecg_version', 'data_mime', 'data',
                       'sample_count']
     },
-    "floors_climbed": {
-        "pattern": "com.samsung.health.floors_climbed.*.csv",
-        "output_name": "floors_climbed.csv",
-        "drop_cols": ['start_time', 'end_time', 'raw_data']
+    "floors_day_summary": {
+        "pattern": "com.samsung.shealth.tracker.floors_day_summary.*.csv",
+        "output_name": "floors_day_summary.csv",
+        "drop_cols": ['start_time', 'end_time', 'version_code']
     },
     "food_info": {
         "pattern": "com.samsung.health.food_info.*.csv",
