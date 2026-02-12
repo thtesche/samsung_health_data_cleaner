@@ -37,6 +37,11 @@ CLEANING_CONFIG = {
         "output_name": "sleep_snoring.csv",
         "drop_cols": ['start_time', 'end_time']
     },
+    "stress": {
+        "pattern": "com.samsung.shealth.stress.*.csv",
+        "output_name": "stress.csv",
+        "drop_cols": ['start_time', 'end_time', 'base_hr', 'decay_time', 'histogram', 'algorithm']
+    },
     "oxygen_saturation": {
         "pattern": "com.samsung.shealth.tracker.oxygen_saturation.*.csv",
         "output_name": "oxygen_saturation.csv",
