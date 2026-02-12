@@ -304,6 +304,12 @@ def clean_health_data(base_dir):
         if all_dfs:
             final_df: pd.DataFrame = pd.concat(all_dfs, ignore_index=True)
 
+            # --- Post-processing for Sleep Goal (keep only latest) ---
+            if file_type == "sleep_goal":
+                if 'create_time' in final_df.columns:
+                    final_df.sort_values(by='create_time', ascending=False, inplace=True)
+                    final_df = final_df.head(1)
+
             # --- Post-processing for Mean Arterial Pressure (requires global sorting) ---
             if file_type == "mean_arterial_pressure":
                 if 'type' in final_df.columns:
